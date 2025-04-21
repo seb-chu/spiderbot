@@ -45,6 +45,7 @@ def test_leg():
 
     print("Test complete.")
 
+# Main
 try:
     test_leg()
 except KeyboardInterrupt:
