@@ -1,5 +1,5 @@
 import math
-
+# from set_angles import set_real_servo_angle
 
 # INITIALIZATION
 # Servo angles (deg)
@@ -41,9 +41,16 @@ def kinematics(pos_x, pos_y, pos_z):
     tibia_joint_deg = tibia_joint_rad * (180 / math.pi)
     femur_joint_deg = femur_joint_rad * (180 / math.pi)
     
-    print(f'Angles (coxa, tibia, femur): {0:.2f}°, {tibia_joint_deg:.2f}°, {femur_joint_deg:.2f}°')
+    print(f'Angles (coxa, femur, tibia): {0:.2f}°, {femur_joint_deg:.2f}°, {tibia_joint_deg:.2f}°')
     print(f'prev position (x, y, z): {pos_x:2f}, {y_rest_helper:2f}, {z_rest_helper:2f}')
     print(f'new position (x, y, z): {pos_x:2f}, {pos_y:2f}, {pos_z:2f}')
+
+    # Set servo angles
+    # set_real_servo_angle(0, 0) # Coxa
+    # set_real_servo_angle(1, femur_joint_deg) # Femur
+    # set_real_servo_angle(2, tibia_joint_deg) # Tibia
+    
+   
 
     # Plot the leg in 3D
     # plot_leg(pos_x, pos_y, pos_z, tibia_joint_deg, femur_joint_deg)
