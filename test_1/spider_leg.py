@@ -6,7 +6,7 @@ class SpiderLeg:
         self.COXA = COXA
         self.FEMUR = FEMUR
         self.TIBIA = TIBIA
-        self.theta1 = 0.
+        self.theta1 = 0.  # Initially, set the angle to zero
         self.theta2 = 0.
         self.theta3 = 0.
 
@@ -39,27 +39,29 @@ class SpiderLeg:
             target = self.joints[3]
         x, y, z = target[0], target[1], target[2]
 
-        theta1 = atan(y / x)
-        Xa = self.COXA * cos((theta1))
-        Ya = self.COXA * sin((theta1))
+        # Ensure that the movement is constrained along the y-axis
+        x = 0  # Fix the x-coordinate to 0
+        z = 0  # Fix the z-coordinate to 0
 
-        Xb = x - Xa
-        Yb = y - Ya
+        # Now calculate theta1 based on y-coordinate
+        theta1 = atan(y / 0.001)  # Small value to avoid division by zero, since x=0
 
-        P = Xb / cos(theta1)
+        Xa = self.COXA * cos(theta1)
+        Ya = self.COXA * sin(theta1)
 
+        # Calculate intermediate values for theta2 and theta3
+        P = sqrt((y - Ya) ** 2)  # Calculate distance along the y-axis
         G = abs(z)
 
         H = sqrt(P ** 2 + G ** 2)
 
         phi3 = asin(G / H)
-
         phi2Acos = ((self.TIBIA ** 2) + (H ** 2) - (self.FEMUR ** 2)) / (2 * self.TIBIA * H)
         phi2 = acos(phi2Acos)
 
         phi1 = acos((self.FEMUR ** 2 + H ** 2 - self.TIBIA ** 2) / (2 * self.FEMUR * H))
 
-        if z > 0:
+        if y > 0:
             theta2 = phi1 + phi3
         else:
             theta2 = phi1 - phi3
@@ -78,6 +80,7 @@ class SpiderLeg:
 
         Xa = self.COXA * cos((theta1))
         Ya = self.COXA * sin((theta1))
+
         G2 = sin(theta2) * self.FEMUR
         P1 = cos(theta2) * self.FEMUR
         Xc = cos(theta1) * P1
@@ -94,11 +97,12 @@ class SpiderLeg:
         G1 = sin(phi3) * H
         G1 = -G1
 
+        # Keep the x and z coordinates fixed
         jointLocation = [
-            [0, 0, 0],
-            [Xa, Ya, 0],
-            [Xa + Xc, Ya + Yc, G2],
-            [Xa + Xb, Ya + Yb, G1]
+            [0, 0, 0],  # Fixed origin
+            [Xa, Ya, 0],  # coxa-femur joint
+            [Xa + Xc, Ya + Yc, G2],  # femur-tibia joint
+            [Xa + Xb, Ya + Yb, G1]  # tip of the leg
         ]
 
         self.joints = jointLocation

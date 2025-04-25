@@ -9,7 +9,7 @@ leg = SpiderLeg("Leg1", COXA=50, FEMUR=100, TIBIA=100)
 leg.setAngles([30, 45, 60])
 
 # Define the new target
-newTarget = [45, 1, -50]
+newTarget = [70, 70, -10]
 
 # Create the figure for plotting
 fig = plt.figure()
