@@ -1,26 +1,38 @@
 import math
-# from set_angles import set_real_servo_angle
-
+from set_servo_angles import *
 # INITIALIZATION
+
 # Servo angles (deg)
-servo_angle_coxa, servo_angle_femur, servo_angle_tibia = 0, 30, 30
+# servo_angle_coxa, servo_angle_femur, servo_angle_tibia = 0, 30, 30
 
 # Link Lengths (inches)
-COXA_LINK = 1.0
-FEMUR_LINK = 1.0
-TIBIA_LINK = 1.0
+COXA_LINK = 2.0
+FEMUR_LINK = 2.5
+TIBIA_LINK = 5
 
-# Helper Variables
-z_rest_helper = 0.3
-y_rest_helper = 0.4
+# Servo channels (change if yours are plugged in elsewhere)
+COXA_CHANNEL = 0
+FEMUR_CHANNEL = 1
+TIBIA_CHANNEL = 2
+
+COXA_ZERO_DEG = 90
+FEMUR_ZERO_DEG = 90
+TIBIA_ZERO_DEG = 90
+
+# Helper Variables (inches)
+z_rest_helper = 3.0
+y_rest_helper = 4.0
 
 # function to utilize IK to move joints accordingly
 def kinematics(pos_x, pos_y, pos_z):
     
     # adds offset to new position
     pos_z += z_rest_helper
-    pos_y += y_rest_helper # TODO do i need coxa_link offset for y? to get the exact tip_point
 
+    pos_y = -pos_y # flipping y value to correct y_position
+    pos_y += y_rest_helper # TODO do i need coxa_link offset for y? to get the exact tip_point
+    # -1 + 4 = 3
+    # 1 + 4 = 5
     # Calculate Angle Positions
     l_helper = math.sqrt(pos_z**2 + pos_y**2)
     
@@ -46,9 +58,9 @@ def kinematics(pos_x, pos_y, pos_z):
     print(f'new position (x, y, z): {pos_x:2f}, {pos_y:2f}, {pos_z:2f}')
 
     # Set servo angles
-    # set_real_servo_angle(0, 0) # Coxa
-    # set_real_servo_angle(1, femur_joint_deg) # Femur
-    # set_real_servo_angle(2, tibia_joint_deg) # Tibia
+    set_relative_servo_angle(COXA_CHANNEL, 0)
+    set_relative_servo_angle(FEMUR_CHANNEL, femur_joint_deg)
+    set_relative_servo_angle(TIBIA_CHANNEL, tibia_joint_deg)
     
    
 
