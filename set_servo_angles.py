@@ -18,55 +18,53 @@ TIBIA_CHANNEL = 2
 FEMUR_CHANNELS = [1]
 TIBIA_CHANNELS = [2]
 
-COXA_ZERO_DEG = 90
-FEMUR_ZERO_DEG = 90
-TIBIA_ZERO_DEG = 90
-
-MAX_FEMUR_ANGLE = 125
-
-
-
 # reverse polarity on specific servos
 affected_channels = [2]
 
-# Helper: Set angle for a servo channel
+# ---------------- user-tunable femur limits --------------------
+MAX_FEMUR_REL =  +45.0      # degrees, + = leg pitches downward
+MIN_FEMUR_REL =  -75.0      # degrees, – = leg lifts upward
+# ---------------------------------------------------------------
+
 def set_servo_angle(channel, rel_angle, carry_angle=0.0):
     """
-    rel_angle : desired servo position in degrees, –90 (left/up) … +90 (right/down)
-    carry_angle : surplus degrees from femur that should bend the tibia
-
-    Returns:
-        updated carry_angle (0 if nothing spilled over)
+    channel      : PCA9685 channel number
+    rel_angle    : ±90° convention (0 = straight & level)
+    carry_angle  : spill passed from femur to tibia
+    returns      : new spill (0 unless femur hit its limit)
     """
-    # 1. map relative –90 … +90  →  absolute 0 … 180
-    abs_angle = rel_angle + 90.0
 
-    # 2. optional femur-tibia spill-over
+    # ---------- 1. femur clamp & spill -------------------------
     if channel in FEMUR_CHANNELS:
-        if abs_angle > MAX_FEMUR_ANGLE:
-            carry_angle = abs_angle - MAX_FEMUR_ANGLE
-            abs_angle   = MAX_FEMUR_ANGLE
-            print(f"[Femur] limited to {MAX_FEMUR_ANGLE} abs° or {MAX_FEMUR_ANGLE-90} rel°, spill {carry_angle:.1f}°")
-        else:
-            carry_angle = 0.0            # nothing to pass along
+        spill = 0.0
+        if rel_angle > MAX_FEMUR_REL:            # too far down
+            spill     = rel_angle - MAX_FEMUR_REL
+            rel_angle = MAX_FEMUR_REL
+            print(f"[Femur] limited to +{MAX_FEMUR_REL}°, spill {spill:.1f}°")
+        elif rel_angle < MIN_FEMUR_REL:          # too far up
+            spill     = rel_angle - MIN_FEMUR_REL   # negative
+            rel_angle = MIN_FEMUR_REL
+            print(f"[Femur] limited to {MIN_FEMUR_REL}°, spill {spill:.1f}°")
+        carry_angle = spill                      # hand to tibia
 
     elif channel in TIBIA_CHANNELS:
-        abs_angle -= carry_angle         # add the spill (really subtract because abs)
-        abs_angle = max(0, min(180, abs_angle))  # safety clamp
+        rel_angle -= carry_angle                 # knee compensates
+        carry_angle = 0.0                        # consumed
 
-    # 3. convert 0 … 180° to 16-bit duty (1 ms … 2 ms pulse at 50 Hz)
-    #    1 ms / 20 ms = 0.05  →  0.05 * 65 535 ≈ 3277
-    #    2 ms / 20 ms = 0.10  →  0.10 * 65 535 ≈ 6554
-    duty_min = 1500
+    # ---------- 2. map relative –90…+90  → absolute 0…180 -------
+    abs_angle = rel_angle + 90.0                # keep in float
+    abs_angle = max(0.0, min(180.0, abs_angle)) # final safety clamp
+
+    # ---------- 3. PWM duty ------------------------------
+    duty_min = 1500           # your board-specific values
     duty_max = 8250
-    if channel in affected_channels:     # reverse-rotation servos
+    if channel in affected_channels:            # reversed servo
         duty_min, duty_max = duty_max, duty_min
 
     duty = int(duty_min + (abs_angle / 180.0) * (duty_max - duty_min))
     pwm.channels[channel].duty_cycle = duty
 
-    print(f"Ch {channel}: rel {abs_angle-90:+6.1f}°, abs {abs_angle:6.1f}°, duty {duty}")
-
+    print(f"Ch{channel}: rel {rel_angle:+6.1f}°, abs {abs_angle:6.1f}°, duty {duty}")
     return carry_angle
 
 
@@ -105,4 +103,5 @@ def increment_angle(channel, start_angle, end_angle, increment=1):
 # TEST CODE
 # RESET ALL TO 0
 
-# set_all_servos_to_default(0)
+set_all_servos_to_default(0)
+
