@@ -73,24 +73,20 @@ def kinematics(pos_x, pos_y, pos_z):
 # function to input x,y,z position and IK makes it move there
 
 
-# kinematics(0, FEMUR_LINK + TIBIA_LINK + COXA_LINK, 0)
-# time.sleep(2)
-
-
-
-kinematics(0, 7, -2)
+kinematics(0, FEMUR_LINK + TIBIA_LINK + COXA_LINK, 0)
 time.sleep(2)
 
-kinematics(0, 8, -1)
-time.sleep(2)
+# WALK FORWARD CYCLE
+kinematics(0.00, 6.92, 2.66)
+time.sleep(1)
+kinematics(0.00, 8.58, 0.68)
+time.sleep(1)
+kinematics(4.29, 7.43, 0.68)
+time.sleep(1)
+kinematics(3.46, 5.99, 2.66)
+time.sleep(1)
+kinematics(0.00, 6.92, 2.66)
+time.sleep(1)
 
-kinematics(2, 6, -2)
-time.sleep(2)
 
 
-
-kinematics(0, 7, -2)
-time.sleep(2)
-
-kinematics(0, 7, -2)
-time.sleep(2)

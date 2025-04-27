@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
-import time
 
 # ------- geometry (same constants you use) --------------------
 COXA_LINK  = 2.0
@@ -72,4 +71,4 @@ def kinematics_plot(pos_x, pos_y, pos_z):
 
 # ---- call with two poses ---------------------------
 kinematics_plot(0, FEMUR_LINK+TIBIA_LINK+COXA_LINK, 0)   # straight ahead
-kinematics_plot(3, FEMUR_LINK+TIBIA_LINK+COXA_LINK, -1)  # yaw + down
+kinematics_plot(0, 9, -1.87)  # yaw + down
