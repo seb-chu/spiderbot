@@ -20,50 +20,66 @@ FEMUR_ZERO_DEG = 90
 TIBIA_ZERO_DEG = 90
 
 # Helper Variables (inches)
-z_rest_helper = 3.0
-y_rest_helper = 4.0
+# z_rest_helper = -2
+# y_rest_helper = 5
 
 # function to utilize IK to move joints accordingly
 def kinematics(pos_x, pos_y, pos_z):
+   
+    # ==============
+    # HELPER LINKS
     
-    # adds offset to new position
-    pos_z += z_rest_helper
-
-    pos_y = -pos_y # flipping y value to correct y_position
-    pos_y += y_rest_helper # TODO do i need coxa_link offset for y? to get the exact tip_point
-    # -1 + 4 = 3
-    # 1 + 4 = 5
     # Calculate Angle Positions
-    l_helper = math.sqrt(pos_z**2 + pos_y**2)
+    h_link = math.sqrt(pos_x**2 + pos_y**2)
+    l_helper = math.sqrt(pos_z**2 + (h_link - COXA_LINK)**2)
     
-    if (l_helper + COXA_LINK > (FEMUR_LINK + TIBIA_LINK)):
-        print(f"new pos length: {l_helper + COXA_LINK}")
+    # determine if link L is too large to physical structure
+    if (l_helper > (FEMUR_LINK + TIBIA_LINK)):
+        print(f"new total distance: {l_helper}")
         print(f"max possible length: {FEMUR_LINK + TIBIA_LINK}")
         print(f"ERROR: can't reach {pos_x:.2f}, {pos_y:.2f}, {pos_z:.2f} position.")
-        return 
+        return
+    # ==============
+
+    # COXA JOINT
+    coxa_joint_rad = math.atan2(pos_x, pos_y)
     
-    tibia_joint_rad = math.acos((FEMUR_LINK**2 + TIBIA_LINK**2 - l_helper**2) / (2 * FEMUR_LINK * TIBIA_LINK))
-
-    b_joint_helper_rad = math.acos((l_helper**2 + FEMUR_LINK**2 - TIBIA_LINK**2) / (2 * l_helper * FEMUR_LINK))
-
-    a_joint_helper_rad = math.atan(pos_z / pos_y)
-
+    # FEMUR JOINT
+    print("lhelp", l_helper)
+    print("numer", (FEMUR_LINK**2 + l_helper**2 - TIBIA_LINK**2))
+    b_joint_helper_rad = math.acos((FEMUR_LINK**2 + l_helper**2 - TIBIA_LINK**2) / (2 * FEMUR_LINK * l_helper))
+    
+    # a_joint_helper_rad = math.atan(pos_z / (h_link - COXA_LINK)) # TODO same thing remove?
+    a_joint_helper_rad = math.asin(pos_z / l_helper)
+    
     femur_joint_rad = b_joint_helper_rad - a_joint_helper_rad
 
-    tibia_joint_deg = tibia_joint_rad * (180 / math.pi)
-    femur_joint_deg = femur_joint_rad * (180 / math.pi)
+
+    # TIBIA JOINT
+    tibia_joint_rad = math.acos((FEMUR_LINK**2 + TIBIA_LINK**2 - l_helper**2) / (2 * FEMUR_LINK * TIBIA_LINK))
+
+
+    # RADIANS to DEGREE
+    coxa_joint_deg = math.degrees(coxa_joint_rad)
+    femur_joint_deg = math.degrees(femur_joint_rad)
+    tibia_joint_deg = math.degrees(tibia_joint_rad)
+    if pos_z < 0:                 # foot below the femur plane ➜ negative
+        tibia_joint_deg = -tibia_joint_deg
+
     
-    print(f'Angles (coxa, femur, tibia): {0:.2f}°, {femur_joint_deg:.2f}°, {tibia_joint_deg:.2f}°')
-    print(f'prev position (x, y, z): {pos_x:2f}, {y_rest_helper:2f}, {z_rest_helper:2f}')
+    print(f'Angles (coxa, femur, tibia): {coxa_joint_deg:.2f}°, {femur_joint_deg:.2f}°, {tibia_joint_deg:.2f}°')
+    # print(f'prev position (x, y, z): {pos_x:2f}, {y_rest_helper:2f}, {z_rest_helper:2f}')
     print(f'new position (x, y, z): {pos_x:2f}, {pos_y:2f}, {pos_z:2f}')
+    print("-----")
 
     # Set servo angles
-    set_relative_servo_angle(COXA_CHANNEL, 0)
-    set_relative_servo_angle(FEMUR_CHANNEL, femur_joint_deg)
-    set_relative_servo_angle(TIBIA_CHANNEL, tibia_joint_deg)
+    # set_servo_angle(COXA_CHANNEL, coxa_joint_deg)
+    # extra_angle = set_servo_angle(FEMUR_CHANNEL, femur_joint_deg)
+    # if extra_angle > 0:
+    #     print(f"EXTRA ANGLE: {extra_angle}")
+    # set_servo_angle(TIBIA_CHANNEL, tibia_joint_deg, extra_angle)
     
    
-
     # Plot the leg in 3D
     # plot_leg(pos_x, pos_y, pos_z, tibia_joint_deg, femur_joint_deg)
 
@@ -78,4 +94,14 @@ def kinematics(pos_x, pos_y, pos_z):
 
 # function to input x,y,z position and IK makes it move there
 
-kinematics(0, 0, 0)
+
+kinematics(0, 5, -3)
+time.sleep(1)
+
+# kinematics(0, 0.5, 0)
+# time.sleep(1)
+
+# kinematics(0, 0, 0)
+
+# kinematics(0, -0.5, 0)
+# time.sleep(3)
