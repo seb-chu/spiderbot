@@ -48,6 +48,29 @@ MAX_FEMUR_REL =  +45.0      # degrees, + = leg pitches downward
 MIN_FEMUR_REL =  -75.0      # degrees, – = leg lifts upward
 # ---------------------------------------------------------------
 
+
+# map leg-id → (coxa-ch, femur-ch, tibia-ch)
+LEG_CHANNELS = {
+    0: (FRONT_RIGHT_COXA_CHANNEL, FRONT_RIGHT_FEMUR_CHANNEL, FRONT_RIGHT_TIBIA_CHANNEL),
+    1: (FRONT_LEFT_COXA_CHANNEL,  FRONT_LEFT_FEMUR_CHANNEL,  FRONT_LEFT_TIBIA_CHANNEL),
+    2: (BACK_RIGHT_COXA_CHANNEL,  BACK_RIGHT_FEMUR_CHANNEL,  BACK_RIGHT_TIBIA_CHANNEL),
+    3: (BACK_LEFT_COXA_CHANNEL,   BACK_LEFT_FEMUR_CHANNEL,   BACK_LEFT_TIBIA_CHANNEL),
+}
+
+def set_leg_angles(leg_id: int, angles):
+    """
+    angles : (coxa_deg, femur_deg, tibia_deg) in your ±90° convention
+    Handles femur-spill → tibia compensation automatically.
+    """
+    coxa_deg, femur_deg, tibia_deg = angles
+    coxa_ch, femur_ch, tibia_ch    = LEG_CHANNELS[leg_id]
+
+    # femur may return a spill that knee must absorb
+    spill = set_servo_angle(femur_ch, femur_deg)
+    set_servo_angle(coxa_ch,  coxa_deg)        # coxa unaffected
+    set_servo_angle(tibia_ch, tibia_deg, spill)
+
+
 def set_servo_angle(channel, rel_angle, carry_angle=0.0):
     """
     channel      : PCA9685 channel number

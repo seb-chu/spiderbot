@@ -1,7 +1,6 @@
 import math
 from set_servo_angles import *
 import time
-from walk_cycle import generate_smooth_walk
 # INITIALIZATION
 
 # Servo angles (deg)
@@ -34,10 +33,6 @@ FRONT_RIGHT_LEG = 0
 FRONT_LEFT_LEG = 1
 BACK_RIGHT_LEG = 2
 BACK_LEFT_LEG = 3
-
-# Helper Variables (inches)
-# z_rest_helper = -2
-# y_rest_helper = 5
 
 # function to utilize IK to move joints accordingly
 def kinematics(pos_x, pos_y, pos_z, leg_type = 0):
@@ -109,39 +104,7 @@ def kinematics(pos_x, pos_y, pos_z, leg_type = 0):
     set_servo_angle(tibia_channel, tibia_deg)
     time.sleep(0.5)
 
-# plot kinematics
-
-
-# function to help translate x,y,z position with IK using interpolation (incrementation)
-
-
-# move set servo angles with new angles (helper function)
-
-
 # function to input x,y,z position and IK makes it move there
-
-
-# Define the key points of the walk cycle
-points = [
-    (0.00, 6.92, 2.66),    # initial standing position
-    (0.00, 8.58, 0.68),    # up
-    (-4.29, 7.43, 0.68),   # forward up
-    (-3.46, 5.99, 2.66),   # down
-    (0.00, 6.92, 2.66),    # back to standing position
-]
-
-# Generate smooth walk cycle with interpolation
-# smooth_points = generate_smooth_walk(points, steps=10)
-
-# Walk through the interpolated points
-# for point in smooth_points:
-#     x, y, z = point
-#     kinematics(x, y, z)  # Call the kinematics function to move the leg
-#     time.sleep(0.01)  # Adjust this to control the speed of movement
-
-
-# kinematics(0, FEMUR_LINK + TIBIA_LINK + COXA_LINK, 0)
-# time.sleep(2)
 
 # WALK FORWARD CYCLE
 def forward(leg_type):
@@ -155,12 +118,7 @@ def forward(leg_type):
     kinematics(0.00, 6.92, 2.66, leg_type) # resting position
 
 
-# set all to 0
-# for i in range(0,16):
-# 	set_servo_angle(i, 0)
-
-
-
+# TEST SERVOS
 # test_num = [0.0, -20.0, 0.0, 20, 0.0]
 
 # for a in test_num:
