@@ -14,12 +14,34 @@ COXA_CHANNEL = 0
 FEMUR_CHANNEL = 1
 TIBIA_CHANNEL = 2
 
+# Servo channels (change if yours are plugged in elsewhere)
+FRONT_RIGHT_COXA_CHANNEL = 0
+FRONT_RIGHT_FEMUR_CHANNEL = 1
+FRONT_RIGHT_TIBIA_CHANNEL = 2
+
+FRONT_LEFT_COXA_CHANNEL = 12
+FRONT_LEFT_FEMUR_CHANNEL = 13
+FRONT_LEFT_TIBIA_CHANNEL = 14
+
+BACK_RIGHT_COXA_CHANNEL = 4
+BACK_RIGHT_FEMUR_CHANNEL = 5
+BACK_RIGHT_TIBIA_CHANNEL = 6
+
+BACK_LEFT_COXA_CHANNEL = 8
+BACK_LEFT_FEMUR_CHANNEL = 9
+BACK_LEFT_TIBIA_CHANNEL = 10
+
 # used for recalculating angles if overexceeded
 FEMUR_CHANNELS = [1]
 TIBIA_CHANNELS = [2]
 
 # reverse polarity on specific servos
-affected_channels = [2]
+affected_channels = [BACK_RIGHT_TIBIA_CHANNEL,
+                     FRONT_RIGHT_TIBIA_CHANNEL,
+                     FRONT_LEFT_COXA_CHANNEL,
+                     FRONT_LEFT_TIBIA_CHANNEL,
+                     BACK_LEFT_COXA_CHANNEL,
+                     BACK_LEFT_TIBIA_CHANNEL]
 
 # ---------------- user-tunable femur limits --------------------
 MAX_FEMUR_REL =  +45.0      # degrees, + = leg pitches downward
@@ -52,8 +74,10 @@ def set_servo_angle(channel, rel_angle, carry_angle=0.0):
         carry_angle = 0.0                        # consumed
 
     # ---------- 2. map relative –90…+90  → absolute 0…180 -------
-    abs_angle = rel_angle + 90.0                # keep in float
-    abs_angle = max(0.0, min(180.0, abs_angle)) # final safety clamp
+    abs_angle = rel_angle + 90.0                # mapping to 0–180°
+    
+    # ---------- Adjust for "down is negative" (inverted) ---------
+    abs_angle = max(0.0, min(180.0, abs_angle)) # safety clamp
 
     # ---------- 3. PWM duty ------------------------------
     duty_min = 1500           # your board-specific values
@@ -103,5 +127,4 @@ def increment_angle(channel, start_angle, end_angle, increment=1):
 # TEST CODE
 # RESET ALL TO 0
 
-set_all_servos_to_default(0)
-
+# set_all_servos_to_default(0)

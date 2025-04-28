@@ -1,5 +1,7 @@
 import math
 from set_servo_angles import *
+import time
+from walk_cycle import generate_smooth_walk
 # INITIALIZATION
 
 # Servo angles (deg)
@@ -11,17 +13,62 @@ FEMUR_LINK = 2.5
 TIBIA_LINK = 5
 
 # Servo channels (change if yours are plugged in elsewhere)
-COXA_CHANNEL = 0
-FEMUR_CHANNEL = 1
-TIBIA_CHANNEL = 2
+FRONT_RIGHT_COXA_CHANNEL = 0
+FRONT_RIGHT_FEMUR_CHANNEL = 1
+FRONT_RIGHT_TIBIA_CHANNEL = 2
+
+FRONT_LEFT_COXA_CHANNEL = 12
+FRONT_LEFT_FEMUR_CHANNEL = 13
+FRONT_LEFT_TIBIA_CHANNEL = 14
+
+BACK_RIGHT_COXA_CHANNEL = 4
+BACK_RIGHT_FEMUR_CHANNEL = 5
+BACK_RIGHT_TIBIA_CHANNEL = 6
+
+BACK_LEFT_COXA_CHANNEL = 8
+BACK_LEFT_FEMUR_CHANNEL = 9
+BACK_LEFT_TIBIA_CHANNEL = 10
+
+# Leg Type
+FRONT_RIGHT_LEG = 0
+FRONT_LEFT_LEG = 1
+BACK_RIGHT_LEG = 2
+BACK_LEFT_LEG = 3
 
 # Helper Variables (inches)
 # z_rest_helper = -2
 # y_rest_helper = 5
 
 # function to utilize IK to move joints accordingly
-def kinematics(pos_x, pos_y, pos_z):
-   
+def kinematics(pos_x, pos_y, pos_z, leg_type = 0):
+    
+    # ------------- Select Leg Type -------------
+    coxa_channel = 0
+    femur_channel = 0
+    tibia_channel = 0
+
+    match leg_type:
+        # FR
+        case 0:
+            coxa_channel = FRONT_RIGHT_COXA_CHANNEL
+            femur_channel = FRONT_RIGHT_FEMUR_CHANNEL
+            tibia_channel = FRONT_RIGHT_TIBIA_CHANNEL
+        # FL
+        case 1:
+            coxa_channel = FRONT_LEFT_COXA_CHANNEL
+            femur_channel = FRONT_LEFT_FEMUR_CHANNEL
+            tibia_channel = FRONT_LEFT_TIBIA_CHANNEL
+        # BR
+        case 2:
+            coxa_channel = BACK_RIGHT_COXA_CHANNEL
+            femur_channel = BACK_RIGHT_FEMUR_CHANNEL
+            tibia_channel = BACK_RIGHT_TIBIA_CHANNEL
+        # BL
+        case 3:
+            coxa_channel = BACK_LEFT_COXA_CHANNEL
+            femur_channel = BACK_LEFT_FEMUR_CHANNEL
+            tibia_channel = BACK_LEFT_TIBIA_CHANNEL
+
     # ------------- helper lengths -------------
     h = math.hypot(pos_x, pos_y)                       # ground-plane distance
     l = math.hypot(pos_z, h - COXA_LINK)           # ankle-to-hip distance
@@ -57,9 +104,10 @@ def kinematics(pos_x, pos_y, pos_z):
     print(f"Position (pos_x, pos_y, pos_z)           : {pos_x:.2f}, {pos_y:.2f}, {pos_z:.2f}\n")
 
     # Set servo angles
-    set_servo_angle(COXA_CHANNEL, coxa_deg)
-    set_servo_angle(FEMUR_CHANNEL, femur_deg)
-    set_servo_angle(TIBIA_CHANNEL, tibia_deg)
+    set_servo_angle(coxa_channel, coxa_deg)
+    set_servo_angle(femur_channel, femur_deg)
+    set_servo_angle(tibia_channel, tibia_deg)
+    time.sleep(0.5)
 
 # plot kinematics
 
@@ -73,20 +121,92 @@ def kinematics(pos_x, pos_y, pos_z):
 # function to input x,y,z position and IK makes it move there
 
 
-kinematics(0, FEMUR_LINK + TIBIA_LINK + COXA_LINK, 0)
-time.sleep(2)
+# Define the key points of the walk cycle
+points = [
+    (0.00, 6.92, 2.66),    # initial standing position
+    (0.00, 8.58, 0.68),    # up
+    (-4.29, 7.43, 0.68),   # forward up
+    (-3.46, 5.99, 2.66),   # down
+    (0.00, 6.92, 2.66),    # back to standing position
+]
+
+# Generate smooth walk cycle with interpolation
+# smooth_points = generate_smooth_walk(points, steps=10)
+
+# Walk through the interpolated points
+# for point in smooth_points:
+#     x, y, z = point
+#     kinematics(x, y, z)  # Call the kinematics function to move the leg
+#     time.sleep(0.01)  # Adjust this to control the speed of movement
+
+
+# kinematics(0, FEMUR_LINK + TIBIA_LINK + COXA_LINK, 0)
+# time.sleep(2)
 
 # WALK FORWARD CYCLE
-kinematics(0.00, 6.92, 2.66)
-time.sleep(1)
-kinematics(0.00, 8.58, 0.68)
-time.sleep(1)
-kinematics(4.29, 7.43, 0.68)
-time.sleep(1)
-kinematics(3.46, 5.99, 2.66)
-time.sleep(1)
-kinematics(0.00, 6.92, 2.66)
-time.sleep(1)
+def forward(leg_type):
+    kinematics(0.00, 6.92, 2.66, leg_type) # resting position
+
+    kinematics(0.00, 8.58, 0.68, leg_type) # up 
+
+    kinematics(-4.29, 7.43, 0.68, leg_type) # forward (up)
+    kinematics(-3.46, 5.99, 2.66, leg_type) # down
+
+    kinematics(0.00, 6.92, 2.66, leg_type) # resting position
+
+
+# set all to 0
+# for i in range(0,16):
+# 	set_servo_angle(i, 0)
 
 
 
+# test_num = [0.0, -20.0, 0.0, 20, 0.0]
+
+# for a in test_num:
+#     # [MOVES CORRECTLY]
+#     # set_servo_angle(FRONT_RIGHT_COXA_CHANNEL, a)
+#     # set_servo_angle(FRONT_RIGHT_FEMUR_CHANNEL, a)
+#     # set_servo_angle(FRONT_RIGHT_TIBIA_CHANNEL, a)
+
+#     # [MOVES CORRECTLY]
+#     # set_servo_angle(BACK_RIGHT_COXA_CHANNEL, a)
+#     # set_servo_angle(BACK_RIGHT_FEMUR_CHANNEL, a)
+#     # set_servo_angle(BACK_RIGHT_TIBIA_CHANNEL, a)  
+
+#     # [MOVES CORRECTLY]
+#     # set_servo_angle(FRONT_LEFT_COXA_CHANNEL, a)
+#     # set_servo_angle(FRONT_LEFT_FEMUR_CHANNEL, a)
+#     # set_servo_angle(FRONT_LEFT_TIBIA_CHANNEL, a)
+
+#     # []
+#     # set_servo_angle(BACK_LEFT_COXA_CHANNEL, a)
+#     # set_servo_angle(BACK_LEFT_FEMUR_CHANNEL, a)
+#     set_servo_angle(BACK_LEFT_TIBIA_CHANNEL, a)
+#     time.sleep(0.5)
+
+# forward(FRONT_RIGHT_LEG) # backwards, add negative to kine(x,...)
+# forward(FRONT_LEFT_LEG) # backwards,
+# forward(BACK_RIGHT_LEG) # backwards, leg is lower than others
+# forward(BACK_LEFT_LEG) # backwards, leg is lower than others
+
+# FUNCTIONS FOR SIMPLE MOVEMENT
+def zero_position(leg_type):
+    kinematics(0, FEMUR_LINK + TIBIA_LINK + COXA_LINK, 0, leg_type)
+    
+# Set starting position for leg
+def standard_position(leg_type):
+    if leg_type in [BACK_RIGHT_LEG, BACK_LEFT_LEG]:
+        kinematics(-3.46, 5.99, 2.66, leg_type)
+    else:
+        kinematics(3.46, 5.99, 2.66, leg_type)
+
+standard_position(FRONT_LEFT_LEG)
+standard_position(FRONT_RIGHT_LEG)
+# standard_position(FRONT_LEFT_LEG)
+# standard_position(FRONT_LEFT_LEG)
+
+
+# FORWARD LOGIC
+# - move each leg forward before reset to default positoin
+# - once we reach the last leg, once it moves forward, move all legs back to standing position
