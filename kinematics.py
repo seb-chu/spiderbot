@@ -118,6 +118,50 @@ def forward(leg_type):
     kinematics(0.00, 6.92, 2.66, leg_type) # resting position
 
 
+#=====================================================================================
+
+
+
+
+
+
+# ------------------------------------------------------------
+# 1) HOME_FOOT  – body-frame XYZ when the robot is “standing”
+# ------------------------------------------------------------
+HOME_FOOT = {
+    FRONT_RIGHT_LEG : ( 3.46, 5.99, 2.66),
+    FRONT_LEFT_LEG  : ( 3.46, 5.99, 2.66),
+    BACK_RIGHT_LEG  : (-3.46, 5.99, 2.66),
+    BACK_LEFT_LEG   : (-3.46, 5.99, 2.66),
+}
+
+# ------------------------------------------------------------
+# 2) stance recorder & body shifter
+# ------------------------------------------------------------
+foot_world = {}    # leg-id → frozen world XYZ
+body_y     = 0.0   # total chassis advance (+fwd, –back)
+
+def capture_stance():
+    """Freeze current foot targets as anchors (use HOME_FOOT here)."""
+    global foot_world, body_y
+    body_y = 0.0                      # reset offset
+    foot_world = HOME_FOOT.copy()     # start from the known pose
+    print("[stance] captured", foot_world)
+
+def move_body(dy):
+    """
+    Slide the body frame forward (+dy) or backward (–dy) inches
+    while keeping the anchored feet fixed in the world frame.
+    """
+    global body_y
+    body_y += dy
+
+    for leg, (wx, wy, wz) in foot_world.items():
+        bx = wx               # no sideways motion
+        by = wy - body_y      # subtract body translation
+        bz = wz
+        kinematics(bx, by, bz, leg)   # reuse your existing IK+servo
+
 # TEST SERVOS
 # test_num = [0.0, -20.0, 0.0, 20, 0.0]
 
@@ -170,4 +214,11 @@ standard_position(BACK_LEFT_LEG)
 # FORWARD LOGIC
 # - move each leg forward before reset to default positoin
 # - once we reach the last leg, once it moves forward, move all legs back to standing position
-kinematics(3.46, 5.99, 2.66, BACK_LEFT_LEG) # down
+capture_stance()      # call once (feet at HOME_FOOT)
+
+move_body(+1.0)       # body 1 inch forward
+time.sleep(0.2)
+
+
+move_body(-1.0)       # slide back half-inch
+

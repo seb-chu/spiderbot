@@ -122,31 +122,6 @@ def set_all_servos_to_default(a):
     set_servo_angle(TIBIA_CHANNEL, a, extra_angle)
 
 
-# simple increment from starting to ending angles, default increment is 1 deg
-def increment_angle(channel, start_angle, end_angle, increment=1):
-    """
-    Move a servo smoothly from start_angle to end_angle.
-    Handles +→+, –→–, +→–, –→+, any increment (int or float > 0).
-    """
-    increment = abs(increment)           # ensure positive magnitude
-    if start_angle == end_angle:
-        set_servo_angle(channel, start_angle)
-        return
-
-    step = math.copysign(increment, end_angle - start_angle)  # ±increment
-    angle = start_angle
-
-    while (end_angle - angle) * step >= 0:   # still on the same side of end?
-        set_servo_angle(channel, angle)
-        time.sleep(0.01)
-        angle += step
-
-    # Guarantee final exactly-on target (avoids overshoot/rounding issues)
-    if angle != end_angle:
-        set_servo_angle(channel, end_angle)
-
-
-
 # TEST CODE
 # RESET ALL TO 0
 
