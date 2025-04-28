@@ -201,12 +201,15 @@ def standard_position(leg_type):
     else:
         kinematics(3.46, 5.99, 2.66, leg_type)
 
-standard_position(FRONT_LEFT_LEG)
+# zero_position(FRONT_RIGHT_LEG)
+# time.sleep(2)
 standard_position(FRONT_RIGHT_LEG)
-# standard_position(FRONT_LEFT_LEG)
-# standard_position(FRONT_LEFT_LEG)
-
+standard_position(BACK_RIGHT_LEG)
+standard_position(FRONT_LEFT_LEG)
+standard_position(BACK_LEFT_LEG)
+#kinematics(0.00, 6.92, 2.66, BACK_LEFT_LEG)
 
 # FORWARD LOGIC
 # - move each leg forward before reset to default positoin
 # - once we reach the last leg, once it moves forward, move all legs back to standing position
+kinematics(3.46, 5.99, 2.66, BACK_LEFT_LEG) # down
